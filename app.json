@@ -1,0 +1,15 @@
+{
+    "id": "489cff97-78ce-4dd8-9c22-5db4da48e3b2",
+    "version": "0.0.1",
+    "requiredApiVersion": "^1.4.0",
+    "iconFile": "icon.png",
+    "author": {
+        "name": "Paul Baity",
+        "homepage": "github.com/pbaity",
+        "support": "none"
+    },
+    "name": "RSS Reader",
+    "nameSlug": "rss-reader",
+    "classFile": "RssReaderApp.ts",
+    "description": "RSS Reader for Rocket.Chat"
+}
