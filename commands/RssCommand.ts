@@ -1,8 +1,8 @@
-import { IHttp, IModify, IPersistence, IPersistenceRead, IRead } from '@rocket.chat/apps-engine/definition/accessors';
-import { IRoom } from '@rocket.chat/apps-engine/definition/rooms';
+import { IHttp, IModify, IPersistence, IRead } from '@rocket.chat/apps-engine/definition/accessors';
+import { IMessage } from '@rocket.chat/apps-engine/definition/messages';
 import { ISlashCommand, SlashCommandContext } from '@rocket.chat/apps-engine/definition/slashcommands';
-import { FeedStore } from '../lib/FeedStore';
-import { help } from '../lib/Help';
+import { FeedManager } from '../lib/FeedManager';
+import { sendNotification } from '../lib/send';
 
 export class RssCommand implements ISlashCommand {
     public command = 'rss';
@@ -12,20 +12,23 @@ export class RssCommand implements ISlashCommand {
 
     public async executor(context: SlashCommandContext, read: IRead, modify: IModify, http: IHttp, persistence: IPersistence): Promise<void> {
         const [subcommand, target] = context.getArguments();
+        let message: IMessage;
 
         switch (subcommand) {
             case 'list':
-                await FeedStore.list(read.getPersistenceReader(), context.getRoom());
+                message = await FeedManager.list(context, read.getPersistenceReader());
                 break;
             case 'remove':
-                await FeedStore.remove(persistence, context.getRoom(), target);
+                message = await FeedManager.remove(target, context, persistence);
                 break;
             case 'subscribe':
-                await FeedStore.subscribe(persistence, context.getRoom(), target);
+                message = await FeedManager.subscribe(target, context, persistence, http);
                 break;
             default:
-                await help(context, modify);
+                message = await FeedManager.help(context);
                 break;
         }
+
+        sendNotification(message, modify);
     }
 }
