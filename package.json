@@ -1,8 +1,34 @@
 {
-    "devDependencies": {
-        "@rocket.chat/apps-engine": "^1.12.0",
-        "@types/node": "^10.12.14",
-        "tslint": "^5.10.0",
-        "typescript": "^2.9.1"
-    }
+  "name": "rocketchat-rss-reader",
+  "version": "0.0.1",
+  "description": "A RSS and Atom Reader for Rocket.Chat",
+  "main": "RssReaderApp.ts",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pbaity/rocketchat-rss-reader.git"
+  },
+  "keywords": [
+    "rss",
+    "atom",
+    "rocketchat"
+  ],
+  "author": "Paul Baity",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pbaity/rocketchat-rss-reader/issues"
+  },
+  "homepage": "https://github.com/pbaity/rocketchat-rss-reader#readme",
+  "devDependencies": {
+    "@rocket.chat/apps-engine": "^1.12.0",
+    "@types/node": "^10.12.14",
+    "tslint": "^5.10.0",
+    "typescript": "^2.9.1"
+  }
 }
