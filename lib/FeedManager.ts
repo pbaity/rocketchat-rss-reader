@@ -13,7 +13,7 @@ export class FeedManager {
         };
 
         try {
-            const response = await http.get(url);
+            const response = await http.get('https://api.rss2json.com/v1/api.json?rss_url=' + url);
             if (response.data.status === 'ok') {
                 const feed: IFeed = response.data.feed as IFeed;
                 await FeedStore.subscribe(persis, message.room, feed);
@@ -37,8 +37,12 @@ export class FeedManager {
 
         const feeds: Array<IFeed> = await FeedStore.list(persis, message.room);
 
-        for (const feed of feeds) {
-            message.text += `${feed.uuid}: ${feed.title} - ${feed.url}\n`;
+        if (feeds.length) {
+            for (const feed of feeds) {
+                message.text += `${feed.uuid}: ${feed.title} - ${feed.url}\n`;
+            }
+        } else {
+            message.text = 'You have no feeds. Use `/rss subscribe <url>` to add one.';
         }
 
         return message;
@@ -66,7 +70,7 @@ export class FeedManager {
         const text = `Commands: subscribe, remove, list, help
                      To subscribe to an RSS feed in this channel: \`/rss subscribe <url>\`
                      To list subscribed RSS feeds in this channel: \`/rss list\`
-                     To remove an RSS feed from this channel: \`/rss remove <url>\``;
+                     To remove an RSS feed from this channel: \`/rss remove <ID>\``;
 
         const message: IMessage = {
             room: context.getRoom(),
