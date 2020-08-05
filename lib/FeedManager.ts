@@ -31,6 +31,7 @@ export class FeedManager {
     public static async list(context: SlashCommandContext, persis: IPersistenceRead): Promise<IMessage> {
         const message: IMessage = {
             room: context.getRoom(),
+            text: '',
             sender: context.getSender(),
             groupable: false,
         };

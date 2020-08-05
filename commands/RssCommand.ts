@@ -2,7 +2,7 @@ import { IHttp, IModify, IPersistence, IRead } from '@rocket.chat/apps-engine/de
 import { IMessage } from '@rocket.chat/apps-engine/definition/messages';
 import { ISlashCommand, SlashCommandContext } from '@rocket.chat/apps-engine/definition/slashcommands';
 import { FeedManager } from '../lib/FeedManager';
-import { sendNotification } from '../lib/send';
+import { Messenger } from '../lib/Messenger';
 
 export class RssCommand implements ISlashCommand {
     public command = 'rss';
@@ -29,6 +29,6 @@ export class RssCommand implements ISlashCommand {
                 break;
         }
 
-        sendNotification(message, modify);
+        Messenger.notify(message, modify);
     }
 }
