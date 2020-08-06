@@ -10,7 +10,7 @@ export class FeedStore {
         const associations: Array<RocketChatAssociationRecord> = [
             new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, 'feed'),
             new RocketChatAssociationRecord(RocketChatAssociationModel.ROOM, room.id),
-            new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, feed.url),
+            new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, feed.url || feed.link),
             new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, feed.uuid),
         ];
 
