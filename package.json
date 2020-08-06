@@ -6,7 +6,9 @@
   "directories": {
     "lib": "lib"
   },
-  "dependencies": {},
+  "dependencies": {
+    "xml2js": "0.4.23"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -28,6 +30,7 @@
   "devDependencies": {
     "@rocket.chat/apps-engine": "^1.12.0",
     "@types/node": "^10.12.14",
+    "@types/xml2js": "0.4.5",
     "tslint": "^5.10.0",
     "typescript": "^2.9.1"
   }

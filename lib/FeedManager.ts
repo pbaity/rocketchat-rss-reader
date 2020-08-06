@@ -1,6 +1,7 @@
 import { IHttp, IPersistence, IPersistenceRead } from '@rocket.chat/apps-engine/definition/accessors';
 import { IMessage } from '@rocket.chat/apps-engine/definition/messages';
 import { SlashCommandContext } from '@rocket.chat/apps-engine/definition/slashcommands';
+import { parseStringPromise } from 'xml2js';
 import { FeedStore } from './FeedStore';
 import { IFeed } from './IFeed';
 
@@ -13,9 +14,10 @@ export class FeedManager {
         };
 
         try {
-            const response = await http.get('https://api.rss2json.com/v1/api.json?rss_url=' + url);
-            if (response.data.status === 'ok') {
-                const feed: IFeed = response.data.feed as IFeed;
+            const response = await http.get(url);
+            const parsed = await parseStringPromise(response);
+            if (parsed.data.status === 'ok') {
+                const feed: IFeed = parsed.data.feed as IFeed;
                 await FeedStore.subscribe(persis, message.room, feed);
                 message.text = `Subscribed to feed ${feed.title} at ${feed.url}.`;
             } else {
