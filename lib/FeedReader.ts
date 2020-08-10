@@ -29,9 +29,9 @@ export class FeedReader {
         const descReg = xml.match(/<channel>.*?<description>(.*?)<\/description>/ms);
 
         const uuid = (Math.ceil(Math.random() * Math.pow(10, 12)) + Math.pow(10, 12)).toString();
-        const title = titleReg?.length ? titleReg[0] : undefined;
-        const link = linkReg?.length ? linkReg[0] : undefined;
-        const description = descReg?.length ? descReg[0] : undefined;
+        const title = titleReg && titleReg.length ? titleReg[0] : undefined;
+        const link = linkReg && linkReg.length ? linkReg[0] : undefined;
+        const description = descReg && descReg.length ? descReg[0] : undefined;
 
         if (title && link && description) {
             return {
@@ -47,7 +47,11 @@ export class FeedReader {
 
     private static parseFeedItems(xml: string): Array<IFeedItem> {
         const items: Array<IFeedItem> = [];
-        const itemReg = xml.matchAll(/<item>(.*?)<\/item>/gms);
+        const itemReg = xml.match(/<item>.*?<\/item>/gms);
+
+        if (!itemReg) {
+            throw new Error('Could not parse feed items.');
+        }
 
         for (const itemMatch of itemReg) {
             const itemDetails = itemMatch.length ? itemMatch[0] : undefined;
@@ -66,10 +70,10 @@ export class FeedReader {
         const descReg = itemXml.match(/<description>(.*?)<\/description>/ms);
         const pubDateReg = itemXml.match(/<pubDate>(.*?)<\/pubDate>/ms);
 
-        const title = titleReg?.length ? titleReg[0] : undefined;
-        const link = linkReg?.length ? linkReg[0] : undefined;
-        const description = descReg?.length ? descReg[0] : undefined;
-        const pubDate = pubDateReg?.length ? new Date(pubDateReg[0]) : undefined;
+        const title = titleReg && titleReg.length ? titleReg[0] : undefined;
+        const link = linkReg && linkReg.length ? linkReg[0] : undefined;
+        const description = descReg && descReg.length ? descReg[0] : undefined;
+        const pubDate = pubDateReg && pubDateReg.length ? new Date(pubDateReg[0]) : undefined;
 
         if (title && link && description) {
             return {

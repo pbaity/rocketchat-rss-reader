@@ -9,8 +9,7 @@
       "strictNullChecks": true,
       "noImplicitReturns": true,
       "emitDecoratorMetadata": true,
-      "experimentalDecorators": true,
-      "lib": ["es2020.string"],
+      "experimentalDecorators": true
     },
     "include": [
       "**/*.ts"
