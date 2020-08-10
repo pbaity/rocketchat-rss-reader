@@ -17,7 +17,7 @@ export class FeedManager {
             if (response.data.status === 'ok') {
                 const feed: IFeed = response.data.feed as IFeed;
                 await FeedStore.subscribe(persis, message.room, feed);
-                message.text = `Subscribed to feed ${feed.title} at ${feed.url}.`;
+                message.text = `Subscribed to feed ${feed.title} at ${feed.link}.`;
             } else {
                 message.text = `Failed to subscribe to feed at ${url}.`;
                 console.warn(response);
@@ -41,7 +41,7 @@ export class FeedManager {
 
         if (feeds.length) {
             for (const feed of feeds) {
-                message.text += `${feed.uuid}: ${feed.title} - ${feed.url}\n`;
+                message.text += `${feed.uuid}: ${feed.title} - ${feed.link}\n`;
             }
         } else {
             message.text = 'You have no feeds. Use `/rss subscribe <url>` to add one.';
