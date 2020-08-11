@@ -5,24 +5,30 @@ import { FeedManager } from '../lib/FeedManager';
 export class RssCommand implements ISlashCommand {
     public command = 'rss';
     public i18nParamsExample = 'help, subscribe, remove, or list';
-    public i18nDescription = 'Manage RSS subscriptions';
+    public i18nDescription = 'Manage RSS feeds';
     public providesPreview = false;
+    private appId: string;
+
+    constructor(appId: string) {
+        this.appId = appId;
+    }
 
     public async executor(context: SlashCommandContext, read: IRead, modify: IModify, http: IHttp, persistence: IPersistence): Promise<void> {
         const [subcommand, target] = context.getArguments();
+        const feedManager: FeedManager = new FeedManager(this.appId, context, persistence, read, http, modify);
 
         switch (subcommand) {
             case 'list':
-                await FeedManager.list(context, read.getPersistenceReader(), modify);
+                await feedManager.list();
                 break;
             case 'remove':
-                await FeedManager.remove(target, context, persistence, modify);
+                await feedManager.remove(target);
                 break;
             case 'subscribe':
-                await FeedManager.subscribe(target, context, persistence, modify, http);
+                await feedManager.subscribe(target);
                 break;
             default:
-                await FeedManager.help(context, modify);
+                await feedManager.help();
                 break;
         }
     }

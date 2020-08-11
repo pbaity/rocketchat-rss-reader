@@ -9,6 +9,6 @@ export class RssReaderApp extends App {
     }
 
     public async extendConfiguration(configuration: IConfigurationExtend) {
-        configuration.slashCommands.provideSlashCommand(new RssCommand());
+        configuration.slashCommands.provideSlashCommand(new RssCommand(this.getID()));
     }
 }

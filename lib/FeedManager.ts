@@ -1,6 +1,7 @@
-import { IHttp, IModify, IPersistence, IPersistenceRead } from '@rocket.chat/apps-engine/definition/accessors';
+import { IHttp, IModify, IPersistence, IPersistenceRead, IRead } from '@rocket.chat/apps-engine/definition/accessors';
 import { IMessage } from '@rocket.chat/apps-engine/definition/messages';
 import { SlashCommandContext } from '@rocket.chat/apps-engine/definition/slashcommands';
+import { IUser } from '@rocket.chat/apps-engine/definition/users';
 import { FeedReader } from './FeedReader';
 import { FeedStore } from './FeedStore';
 import { IFeed } from './IFeed';
@@ -8,15 +9,34 @@ import { IFeedItem } from './IFeedItem';
 import { Messenger } from './Messenger';
 
 export class FeedManager {
-    public static initializeAutoReader(context: SlashCommandContext, persis: IPersistence, reader: IPersistenceRead, http: IHttp, modify: IModify): void {
+    private appId: string;
+    private context: SlashCommandContext;
+    private persis: IPersistence;
+    private persisRead: IPersistenceRead;
+    private http: IHttp;
+    private modify: IModify;
+    private user: IUser;
+
+    constructor(appId: string, context: SlashCommandContext, persis: IPersistence, read: IRead, http: IHttp, modify: IModify) {
+        this.appId = appId;
+        this.context = context;
+        this.persis = persis;
+        this.persisRead = read.getPersistenceReader();
+        this.http = http;
+        this.modify = modify;
+
+        this.initialize(read);
+    }
+
+    public initializeAutoReader(): void {
         setInterval(async () => {
-            const feeds: Array<IFeed> = await FeedStore.getAllFeeds(reader);
+            const feeds: Array<IFeed> = await FeedStore.getAllFeeds(this.persisRead);
             if (feeds.length) {
                 for (const feed of feeds) {
-                    const messages: Array<IMessage> = await this.read(feed, persis, context, http);
+                    const messages: Array<IMessage> = await this.read(feed, this.persis, this.context, this.http);
                     if (messages.length) {
                         for (const message of messages) {
-                            Messenger.notify(message, modify);
+                            Messenger.notify(message, this.modify);
                         }
                     }
                 }
@@ -24,34 +44,34 @@ export class FeedManager {
         }, 1000 * 60 * 20);
     }
 
-    public static async subscribe(url: string, context: SlashCommandContext, persis: IPersistence, modify: IModify, http: IHttp): Promise<void> {
+    public async subscribe(url: string): Promise<void> {
         const message: IMessage = {
-            room: context.getRoom(),
-            sender: context.getSender(),
+            room: this.context.getRoom(),
+            sender: this.user,
             groupable: false,
         };
 
         try {
-            const feed: IFeed = await FeedReader.getFeedInfo(url, http);
-            await FeedStore.add(persis, message.room, feed);
+            const feed: IFeed = await FeedReader.getFeedInfo(url, this.http);
+            await FeedStore.add(this.persis, message.room, feed);
             message.text = `Subscribed to feed ${feed.title} at ${feed.link}.`;
         } catch (err) {
             message.text = `Failed to subscribe to feed at ${url}.`;
             console.error(err);
         }
 
-        Messenger.notify(message, modify);
+        Messenger.notify(message, this.modify);
     }
 
-    public static async list(context: SlashCommandContext, persis: IPersistenceRead, modify: IModify): Promise<void> {
+    public async list(): Promise<void> {
         const message: IMessage = {
-            room: context.getRoom(),
+            room: this.context.getRoom(),
             text: '',
-            sender: context.getSender(),
+            sender: this.user,
             groupable: false,
         };
 
-        const feeds: Array<IFeed> = await FeedStore.getRoomFeeds(message.room, persis);
+        const feeds: Array<IFeed> = await FeedStore.getRoomFeeds(message.room, this.persisRead);
 
         if (feeds.length) {
             for (const feed of feeds) {
@@ -61,44 +81,49 @@ export class FeedManager {
             message.text = 'You have no feeds. Use `/rss subscribe <url>` to add one.';
         }
 
-        Messenger.notify(message, modify);
+        Messenger.notify(message, this.modify);
     }
 
-    public static async remove(uuid: string, context: SlashCommandContext, persis: IPersistence, modify: IModify): Promise<void> {
+    public async remove(uuid: string): Promise<void> {
         const message: IMessage = {
-            room: context.getRoom(),
-            sender: context.getSender(),
+            room: this.context.getRoom(),
+            sender: this.user,
             groupable: false,
         };
 
         try {
-            await FeedStore.remove(persis, message.room, uuid);
+            await FeedStore.remove(this.persis, message.room, uuid);
             message.text = `Removed feed with ID ${uuid}.`;
         } catch (err) {
             console.error(err);
             message.text = `Failed to remove feed with ID ${uuid}.`;
         }
 
-        Messenger.notify(message, modify);
+        Messenger.notify(message, this.modify);
     }
 
-    public static help(context: SlashCommandContext, modify: IModify): void {
+    public help(): void {
         const text = `Commands: subscribe, remove, list, help
                      To subscribe to an RSS feed in this channel: \`/rss subscribe <url>\`
                      To list subscribed RSS feeds in this channel: \`/rss list\`
                      To remove an RSS feed from this channel: \`/rss remove <ID>\``;
 
         const message: IMessage = {
-            room: context.getRoom(),
-            sender: context.getSender(),
+            room: this.context.getRoom(),
+            sender: this.user,
             text,
             groupable: false,
         };
 
-        Messenger.notify(message, modify);
+        Messenger.notify(message, this.modify);
     }
 
-    private static async read(feed: IFeed, persis: IPersistence, context: SlashCommandContext, http: IHttp): Promise<Array<IMessage>> {
+    private async initialize(read: IRead) {
+        const appUser: IUser | undefined = await read.getUserReader().getAppUser(this.appId);
+        this.user = appUser === undefined ? this.context.getSender() : appUser;
+    }
+
+    private async read(feed: IFeed, persis: IPersistence, context: SlashCommandContext, http: IHttp): Promise<Array<IMessage>> {
         const messages: Array<IMessage> = [];
         const newItems: Array<IFeedItem> = await FeedReader.getNewFeedItems(feed, http);
 
