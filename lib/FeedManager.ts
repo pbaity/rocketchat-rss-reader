@@ -65,11 +65,13 @@ export class FeedManager {
         return message;
     }
 
-    public static async read(feed: IFeed, context: SlashCommandContext, http: IHttp): Promise<Array<IMessage>> {
+    public static async read(feed: IFeed, persis: IPersistence, context: SlashCommandContext, http: IHttp): Promise<Array<IMessage>> {
         const messages: Array<IMessage> = [];
         const newItems: Array<IFeedItem> = await FeedReader.getNewFeedItems(feed, http);
 
         if (newItems.length) {
+            feed.lastItemLink = newItems[0].link;
+            FeedStore.subscribe(persis, context.getRoom(), feed);
             for (const item of newItems) {
                 messages.push({
                     room: context.getRoom(),
