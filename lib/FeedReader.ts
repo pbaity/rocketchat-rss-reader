@@ -28,14 +28,12 @@ export class FeedReader {
         const linkReg = xml.match(/<channel>.*?<link>(.*?)<\/link>/ms);
         const descReg = xml.match(/<channel>.*?<description>(.*?)<\/description>/ms);
 
-        const uuid = (Math.ceil(Math.random() * Math.pow(10, 12)) + Math.pow(10, 12)).toString();
         const title = titleReg && titleReg.length ? titleReg[0] : undefined;
         const link = linkReg && linkReg.length ? linkReg[0] : undefined;
         const description = descReg && descReg.length ? descReg[0] : undefined;
 
         if (title && link && description) {
             return {
-                uuid,
                 title,
                 link,
                 description,

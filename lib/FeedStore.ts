@@ -5,7 +5,7 @@ import { IFeed } from './IFeed';
 
 export class FeedStore {
     public static async subscribe(persis: IPersistence, room: IRoom, feed: IFeed): Promise<boolean> {
-        feed.uuid = (Math.ceil(Math.random() * Math.pow(10, 12)) + Math.pow(10, 12)).toString();
+        feed.uuid = this.assignUuid();
 
         const associations: Array<RocketChatAssociationRecord> = [
             new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, 'feed'),
@@ -60,5 +60,9 @@ export class FeedStore {
         }
 
         return true;
+    }
+
+    private static assignUuid(): string {
+        return (Math.ceil(Math.random() * Math.pow(10, 12)) + Math.pow(10, 12)).toString();
     }
 }

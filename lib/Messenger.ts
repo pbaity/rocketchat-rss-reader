@@ -17,7 +17,7 @@ export class Messenger {
         modify.getNotifier().notifyUser(message.sender, modify.getCreator()
             .startMessage(message)
             .setUsernameAlias('RSS Reader')
-            .setAvatarUrl('../icon.png')
+            .setAvatarUrl('https://raw.githubusercontent.com/pbaity/rocketchat-rss-reader/master/icon.png')
             .getMessage());
     }
 }

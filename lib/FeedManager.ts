@@ -1,6 +1,7 @@
 import { IHttp, IPersistence, IPersistenceRead } from '@rocket.chat/apps-engine/definition/accessors';
 import { IMessage } from '@rocket.chat/apps-engine/definition/messages';
 import { SlashCommandContext } from '@rocket.chat/apps-engine/definition/slashcommands';
+import { FeedReader } from './FeedReader';
 import { FeedStore } from './FeedStore';
 import { IFeed } from './IFeed';
 
@@ -13,20 +14,15 @@ export class FeedManager {
         };
 
         try {
-            const response = await http.get('https://api.rss2json.com/v1/api.json?rss_url=' + url);
-            if (response.data.status === 'ok') {
-                const feed: IFeed = response.data.feed as IFeed;
-                await FeedStore.subscribe(persis, message.room, feed);
-                message.text = `Subscribed to feed ${feed.title} at ${feed.link}.`;
-            } else {
-                message.text = `Failed to subscribe to feed at ${url}.`;
-                console.warn(response);
-            }
-            return message;
+            const feed: IFeed = await FeedReader.getFeedInfo(url, http);
+            await FeedStore.subscribe(persis, message.room, feed);
+            message.text = `Subscribed to feed ${feed.title} at ${feed.link}.`;
         } catch (err) {
+            message.text = `Failed to subscribe to feed at ${url}.`;
             console.error(err);
-            throw new Error(err);
         }
+
+        return message;
     }
 
     public static async list(context: SlashCommandContext, persis: IPersistenceRead): Promise<IMessage> {
@@ -60,12 +56,12 @@ export class FeedManager {
         try {
             await FeedStore.remove(persis, message.room, uuid);
             message.text = `Removed feed with ID ${uuid}.`;
-            return message;
         } catch (err) {
             console.error(err);
             message.text = `Failed to remove feed with ID ${uuid}.`;
-            return message;
         }
+
+        return message;
     }
 
     public static async help(context: SlashCommandContext): Promise<IMessage> {
