@@ -4,6 +4,7 @@ import { SlashCommandContext } from '@rocket.chat/apps-engine/definition/slashco
 import { FeedReader } from './FeedReader';
 import { FeedStore } from './FeedStore';
 import { IFeed } from './IFeed';
+import { IFeedItem } from './IFeedItem';
 
 export class FeedManager {
     public static async subscribe(url: string, context: SlashCommandContext, persis: IPersistence, http: IHttp): Promise<IMessage> {
@@ -64,7 +65,25 @@ export class FeedManager {
         return message;
     }
 
-    public static async help(context: SlashCommandContext): Promise<IMessage> {
+    public static async read(feed: IFeed, context: SlashCommandContext, http: IHttp): Promise<Array<IMessage>> {
+        const messages: Array<IMessage> = [];
+        const newItems: Array<IFeedItem> = await FeedReader.getNewFeedItems(feed, http);
+
+        if (newItems.length) {
+            for (const item of newItems) {
+                messages.push({
+                    room: context.getRoom(),
+                    sender: context.getSender(),
+                    groupable: false,
+                    text: `${item.title}\n${item.link}`,
+                });
+            }
+        }
+
+        return messages;
+    }
+
+    public static help(context: SlashCommandContext): IMessage {
         const text = `Commands: subscribe, remove, list, help
                      To subscribe to an RSS feed in this channel: \`/rss subscribe <url>\`
                      To list subscribed RSS feeds in this channel: \`/rss list\`

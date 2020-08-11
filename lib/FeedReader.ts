@@ -12,7 +12,7 @@ export class FeedReader {
         }
     }
 
-    public static async readFeed(feed: IFeed, http: IHttp): Promise<Array<IFeedItem>> {
+    public static async getNewFeedItems(feed: IFeed, http: IHttp): Promise<Array<IFeedItem>> {
         try {
             const response = await http.get(feed.link);
             const feedItems = this.parseFeedItems(response.content!);
