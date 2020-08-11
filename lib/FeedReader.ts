@@ -6,18 +6,18 @@ export class FeedReader {
     public static async getFeedInfo(url: string, http: IHttp): Promise<IFeed> {
         try {
             const response = await http.get(url);
-            const xml = response.content;
-            return this.parseChannelDetails(xml!);
+            return this.parseChannelDetails(response.content!);
         } catch (err) {
             throw new Error('Could not get feed info: ' + err);
         }
     }
 
-    public static async getFeedItems(feed: IFeed, http: IHttp): Promise<Array<IFeedItem>> {
+    public static async readFeed(feed: IFeed, http: IHttp): Promise<Array<IFeedItem>> {
         try {
             const response = await http.get(feed.link);
-            const xml = response.content;
-            return this.parseFeedItems(xml!);
+            const feedItems = this.parseFeedItems(response.content!);
+            const lastItemIndex = feedItems.findIndex((item) => item.link === feed.lastItemLink);
+            return feedItems.slice(0, lastItemIndex);
         } catch (err) {
             throw new Error('Could not get feed items: ' + err);
         }
@@ -27,16 +27,19 @@ export class FeedReader {
         const titleReg = xml.match(/<channel>.*?<title>(.*?)<\/title>/ms);
         const linkReg = xml.match(/<channel>.*?<link>(.*?)<\/link>/ms);
         const descReg = xml.match(/<channel>.*?<description>(.*?)<\/description>/ms);
+        const lastItemLinkReg = xml.match(/<channel>.*?<item>.*?<link>(.*?)<\/link>.*?<\/item>/ms);
 
         const title = titleReg && titleReg.length ? titleReg[0] : undefined;
         const link = linkReg && linkReg.length ? linkReg[0] : undefined;
         const description = descReg && descReg.length ? descReg[0] : undefined;
+        const lastItemLink = lastItemLinkReg && lastItemLinkReg.length ? lastItemLinkReg[0] : undefined;
 
         if (title && link && description) {
             return {
                 title,
                 link,
                 description,
+                lastItemLink,
             };
         } else {
             throw new Error('Failed to read RSS channel details.');
