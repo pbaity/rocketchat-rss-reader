@@ -1,8 +1,6 @@
 import { IHttp, IModify, IPersistence, IRead } from '@rocket.chat/apps-engine/definition/accessors';
-import { IMessage } from '@rocket.chat/apps-engine/definition/messages';
 import { ISlashCommand, SlashCommandContext } from '@rocket.chat/apps-engine/definition/slashcommands';
 import { FeedManager } from '../lib/FeedManager';
-import { Messenger } from '../lib/Messenger';
 
 export class RssCommand implements ISlashCommand {
     public command = 'rss';
@@ -12,23 +10,20 @@ export class RssCommand implements ISlashCommand {
 
     public async executor(context: SlashCommandContext, read: IRead, modify: IModify, http: IHttp, persistence: IPersistence): Promise<void> {
         const [subcommand, target] = context.getArguments();
-        let message: IMessage;
 
         switch (subcommand) {
             case 'list':
-                message = await FeedManager.list(context, read.getPersistenceReader());
+                await FeedManager.list(context, read.getPersistenceReader(), modify);
                 break;
             case 'remove':
-                message = await FeedManager.remove(target, context, persistence);
+                await FeedManager.remove(target, context, persistence, modify);
                 break;
             case 'subscribe':
-                message = await FeedManager.subscribe(target, context, persistence, http);
+                await FeedManager.subscribe(target, context, persistence, modify, http);
                 break;
             default:
-                message = await FeedManager.help(context);
+                await FeedManager.help(context, modify);
                 break;
         }
-
-        Messenger.notify(message, modify);
     }
 }
