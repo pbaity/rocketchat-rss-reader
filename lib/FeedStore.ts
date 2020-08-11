@@ -6,6 +6,7 @@ import { IFeed } from './IFeed';
 export class FeedStore {
     public static async add(persis: IPersistence, room: IRoom, feed: IFeed): Promise<boolean> {
         feed.uuid = this.assignUuid();
+        feed.room = room;
 
         const associations: Array<RocketChatAssociationRecord> = [
             new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, 'feed'),
@@ -42,7 +43,7 @@ export class FeedStore {
         return true;
     }
 
-    public static async list(persis: IPersistenceRead, room: IRoom): Promise<Array<IFeed>> {
+    public static async getRoomFeeds(room: IRoom, persis: IPersistenceRead): Promise<Array<IFeed>> {
         const associations: Array<RocketChatAssociationRecord> = [
             new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, 'feed'),
             new RocketChatAssociationRecord(RocketChatAssociationModel.ROOM, room.id),
@@ -52,6 +53,23 @@ export class FeedStore {
 
         try {
             const records: Array<IFeed> = (await persis.readByAssociations(associations)) as Array<IFeed>;
+
+            if (records.length) {
+                feeds.push.apply(feeds, records);
+            }
+        } catch (err) {
+            console.warn(err);
+        }
+
+        return feeds;
+    }
+
+    public static async getAllFeeds(persis: IPersistenceRead): Promise<Array<IFeed>> {
+        const association = new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, 'feed');
+        const feeds: Array<IFeed> = [];
+
+        try {
+            const records: Array<IFeed> = (await persis.readByAssociation(association)) as Array<IFeed>;
 
             if (records.length) {
                 feeds.push.apply(feeds, records);

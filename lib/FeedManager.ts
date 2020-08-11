@@ -34,7 +34,7 @@ export class FeedManager {
             groupable: false,
         };
 
-        const feeds: Array<IFeed> = await FeedStore.list(persis, message.room);
+        const feeds: Array<IFeed> = await FeedStore.getRoomFeeds(message.room, persis);
 
         if (feeds.length) {
             for (const feed of feeds) {
