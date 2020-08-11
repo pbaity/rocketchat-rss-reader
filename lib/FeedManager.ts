@@ -16,7 +16,7 @@ export class FeedManager {
 
         try {
             const feed: IFeed = await FeedReader.getFeedInfo(url, http);
-            await FeedStore.subscribe(persis, message.room, feed);
+            await FeedStore.add(persis, message.room, feed);
             message.text = `Subscribed to feed ${feed.title} at ${feed.link}.`;
         } catch (err) {
             message.text = `Failed to subscribe to feed at ${url}.`;
@@ -71,7 +71,7 @@ export class FeedManager {
 
         if (newItems.length) {
             feed.lastItemLink = newItems[0].link;
-            FeedStore.subscribe(persis, context.getRoom(), feed);
+            FeedStore.update(persis, context.getRoom(), feed);
             for (const item of newItems) {
                 messages.push({
                     room: context.getRoom(),

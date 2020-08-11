@@ -4,7 +4,7 @@ import { IRoom } from '@rocket.chat/apps-engine/definition/rooms';
 import { IFeed } from './IFeed';
 
 export class FeedStore {
-    public static async subscribe(persis: IPersistence, room: IRoom, feed: IFeed): Promise<boolean> {
+    public static async add(persis: IPersistence, room: IRoom, feed: IFeed): Promise<boolean> {
         feed.uuid = this.assignUuid();
 
         const associations: Array<RocketChatAssociationRecord> = [
@@ -15,7 +15,25 @@ export class FeedStore {
         ];
 
         try {
-            await persis.updateByAssociations(associations, feed, true);
+            await persis.createWithAssociations(feed, associations);
+        } catch (err) {
+            console.warn(err);
+            return false;
+        }
+
+        return true;
+    }
+
+    public static async update(persis: IPersistence, room: IRoom, feed: IFeed): Promise<boolean> {
+        const associations: Array<RocketChatAssociationRecord> = [
+            new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, 'feed'),
+            new RocketChatAssociationRecord(RocketChatAssociationModel.ROOM, room.id),
+            new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, feed.link),
+            new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, feed.uuid!),
+        ];
+
+        try {
+            await persis.updateByAssociations(associations, feed, false);
         } catch (err) {
             console.warn(err);
             return false;
