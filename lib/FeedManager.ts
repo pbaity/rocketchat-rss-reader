@@ -10,7 +10,6 @@ import { IFeedItem } from './IFeedItem';
 import { Messenger } from './Messenger';
 
 export class FeedManager {
-    private appId: string;
     private context: SlashCommandContext;
     private persis: IPersistence;
     private persisRead: IPersistenceRead;
@@ -19,8 +18,7 @@ export class FeedManager {
     private user: IUser;
     private room: IRoom;
 
-    constructor(appId: string, context: SlashCommandContext, persis: IPersistence, read: IRead, http: IHttp, modify: IModify) {
-        this.appId = appId;
+    constructor(context: SlashCommandContext, persis: IPersistence, read: IRead, http: IHttp, modify: IModify) {
         this.context = context;
         this.persis = persis;
         this.persisRead = read.getPersistenceReader();
