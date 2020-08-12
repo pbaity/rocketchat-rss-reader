@@ -29,10 +29,10 @@ export class FeedReader {
         const descReg = xml.match(/<channel>.*?<description>(.*?)<\/description>/ms);
         const lastItemLinkReg = xml.match(/<channel>.*?<item>.*?<link>(.*?)<\/link>.*?<\/item>/ms);
 
-        const title = titleReg && titleReg.length ? titleReg[0] : undefined;
-        const link = linkReg && linkReg.length ? linkReg[0] : undefined;
-        const description = descReg && descReg.length ? descReg[0] : undefined;
-        const lastItemLink = lastItemLinkReg && lastItemLinkReg.length ? lastItemLinkReg[0] : undefined;
+        const title = titleReg && titleReg.length > 1 ? titleReg[1] : undefined;
+        const link = linkReg && linkReg.length > 1 ? linkReg[1] : undefined;
+        const description = descReg && descReg.length > 1 ? descReg[1] : undefined;
+        const lastItemLink = lastItemLinkReg && lastItemLinkReg.length > 1 ? lastItemLinkReg[1] : undefined;
 
         if (title && link && description) {
             return {
@@ -48,14 +48,14 @@ export class FeedReader {
 
     private static parseFeedItems(xml: string): Array<IFeedItem> {
         const items: Array<IFeedItem> = [];
-        const itemReg = xml.match(/<item>.*?<\/item>/gms);
+        const itemReg = xml.match(/<item>(.*?)<\/item>/gms);
 
         if (!itemReg) {
             throw new Error('Could not parse feed items.');
         }
 
         for (const itemMatch of itemReg) {
-            const itemDetails = itemMatch.length ? itemMatch[0] : undefined;
+            const itemDetails = itemMatch.length > 1 ? itemMatch[1] : undefined;
             if (itemDetails) {
                 const item = this.parseItemDetails(itemDetails);
                 items.push(item);
@@ -71,10 +71,10 @@ export class FeedReader {
         const descReg = itemXml.match(/<description>(.*?)<\/description>/ms);
         const pubDateReg = itemXml.match(/<pubDate>(.*?)<\/pubDate>/ms);
 
-        const title = titleReg && titleReg.length ? titleReg[0] : undefined;
-        const link = linkReg && linkReg.length ? linkReg[0] : undefined;
-        const description = descReg && descReg.length ? descReg[0] : undefined;
-        const pubDate = pubDateReg && pubDateReg.length ? new Date(pubDateReg[0]) : undefined;
+        const title = titleReg && titleReg.length > 1 ? titleReg[1] : undefined;
+        const link = linkReg && linkReg.length > 1 ? linkReg[1] : undefined;
+        const description = descReg && descReg.length > 1 ? descReg[1] : undefined;
+        const pubDate = pubDateReg && pubDateReg.length > 1 ? new Date(pubDateReg[1]) : undefined;
 
         if (title && link && description) {
             return {
