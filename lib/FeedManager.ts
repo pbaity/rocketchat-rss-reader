@@ -1,4 +1,4 @@
-import { IHttp, IModify, IPersistence, IPersistenceRead, IRead } from '@rocket.chat/apps-engine/definition/accessors';
+import { IHttp, IModify, IPersistence, IPersistenceRead, IRead, IUserRead } from '@rocket.chat/apps-engine/definition/accessors';
 import { IMessage } from '@rocket.chat/apps-engine/definition/messages';
 import { SlashCommandContext } from '@rocket.chat/apps-engine/definition/slashcommands';
 import { IUser } from '@rocket.chat/apps-engine/definition/users';
@@ -25,7 +25,10 @@ export class FeedManager {
         this.http = http;
         this.modify = modify;
 
-        this.initialize(read);
+        this.initialize(read, async (userReader) => {
+            const appUser: IUser | undefined = await userReader.getAppUser(this.appId);
+            this.user = appUser === undefined ? this.context.getSender() : appUser;
+        });
     }
 
     public initializeAutoReader(): void {
@@ -118,9 +121,9 @@ export class FeedManager {
         Messenger.notify(message, this.modify);
     }
 
-    private async initialize(read: IRead) {
-        const appUser: IUser | undefined = await read.getUserReader().getAppUser(this.appId);
-        this.user = appUser === undefined ? this.context.getSender() : appUser;
+    private async initialize(read: IRead, callback: (userReader: IUserRead) => void): Promise<void> {
+        const userReader = read.getUserReader();
+        callback(userReader);
     }
 
     private async read(feed: IFeed, persis: IPersistence, context: SlashCommandContext, http: IHttp): Promise<Array<IMessage>> {
