@@ -1,5 +1,6 @@
 import { IHttp, IModify, IPersistence, IPersistenceRead, IRead, IUserRead } from '@rocket.chat/apps-engine/definition/accessors';
 import { IMessage } from '@rocket.chat/apps-engine/definition/messages';
+import { IRoom } from '@rocket.chat/apps-engine/definition/rooms';
 import { SlashCommandContext } from '@rocket.chat/apps-engine/definition/slashcommands';
 import { IUser } from '@rocket.chat/apps-engine/definition/users';
 import { FeedReader } from './FeedReader';
@@ -16,6 +17,7 @@ export class FeedManager {
     private http: IHttp;
     private modify: IModify;
     private user: IUser;
+    private room: IRoom;
 
     constructor(appId: string, context: SlashCommandContext, persis: IPersistence, read: IRead, http: IHttp, modify: IModify) {
         this.appId = appId;
@@ -24,11 +26,8 @@ export class FeedManager {
         this.persisRead = read.getPersistenceReader();
         this.http = http;
         this.modify = modify;
-
-        this.initialize(read, async (userReader) => {
-            const appUser: IUser | undefined = await userReader.getAppUser(this.appId);
-            this.user = appUser === undefined ? this.context.getSender() : appUser;
-        });
+        this.user = this.context.getSender();
+        this.room = this.context.getRoom();
     }
 
     public initializeAutoReader(): void {
@@ -49,7 +48,7 @@ export class FeedManager {
 
     public async subscribe(url: string): Promise<void> {
         const message: IMessage = {
-            room: this.context.getRoom(),
+            room: this.room,
             sender: this.user,
             groupable: false,
         };
@@ -68,7 +67,7 @@ export class FeedManager {
 
     public async list(): Promise<void> {
         const message: IMessage = {
-            room: this.context.getRoom(),
+            room: this.room,
             text: '',
             sender: this.user,
             groupable: false,
@@ -89,7 +88,7 @@ export class FeedManager {
 
     public async remove(uuid: string): Promise<void> {
         const message: IMessage = {
-            room: this.context.getRoom(),
+            room: this.room,
             sender: this.user,
             groupable: false,
         };
@@ -112,18 +111,13 @@ export class FeedManager {
                      To remove an RSS feed from this channel: \`/rss remove <ID>\``;
 
         const message: IMessage = {
-            room: this.context.getRoom(),
+            room: this.room,
             sender: this.user,
             text,
             groupable: false,
         };
 
         Messenger.notify(message, this.modify);
-    }
-
-    private async initialize(read: IRead, callback: (userReader: IUserRead) => void): Promise<void> {
-        const userReader = read.getUserReader();
-        callback(userReader);
     }
 
     private async read(feed: IFeed, persis: IPersistence, context: SlashCommandContext, http: IHttp): Promise<Array<IMessage>> {
