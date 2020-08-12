@@ -5,8 +5,8 @@
     "iconFile": "icon.png",
     "author": {
         "name": "Paul Baity",
-        "homepage": "github.com/pbaity",
-        "support": "none"
+        "homepage": "https://github.com/pbaity",
+        "support": "https://github.com/pbaity/rocketchat-rss-reader/issues"
     },
     "name": "RSS Reader",
     "nameSlug": "rss-reader",

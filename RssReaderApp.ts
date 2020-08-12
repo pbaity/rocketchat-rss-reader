@@ -12,7 +12,7 @@ export class RssReaderApp extends App {
         this.enable(accessors.http, accessors.reader);
     }
 
-    public async initialize(configuration: IConfigurationExtend): Promise<void> {
+    public async extendConfiguration(configuration: IConfigurationExtend) {
         await configuration.settings.provideSetting({
             id : 'enabled-rooms',
             i18nLabel: 'Enabled Rooms',
@@ -22,10 +22,7 @@ export class RssReaderApp extends App {
             public: true,
             packageValue: 'random',
         });
-    }
-
-    public async extendConfiguration(configuration: IConfigurationExtend) {
-        configuration.slashCommands.provideSlashCommand(new RssCommand());
+        await configuration.slashCommands.provideSlashCommand(new RssCommand());
     }
 
     private enable(http: IHttp, reader: IRead) {
