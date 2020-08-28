@@ -1,12 +1,13 @@
 import { IHttp } from '@rocket.chat/apps-engine/definition/accessors';
+import { IRoom } from '@rocket.chat/apps-engine/definition/rooms';
 import { IFeed } from './IFeed';
 import { IFeedItem } from './IFeedItem';
 
 export class FeedReader {
-    public static async getFeedInfo(url: string, http: IHttp): Promise<IFeed> {
+    public static async getFeedInfo(url: string, http: IHttp, room: IRoom): Promise<IFeed> {
         try {
             const response = await http.get(url);
-            return this.parseChannelDetails(response.content!);
+            return this.parseChannelDetails(response.content!, room);
         } catch (err) {
             throw new Error('Could not get feed info: ' + err);
         }
@@ -23,7 +24,7 @@ export class FeedReader {
         }
     }
 
-    private static parseChannelDetails(xml: string): IFeed {
+    private static parseChannelDetails(xml: string, room: IRoom): IFeed {
         const titleReg = xml.match(/<channel>.*?<title>(.*?)<\/title>/ms);
         const linkReg = xml.match(/<channel>.*?<link>(.*?)<\/link>/ms);
         const descReg = xml.match(/<channel>.*?<description>(.*?)<\/description>/ms);
@@ -40,6 +41,7 @@ export class FeedReader {
                 link,
                 description,
                 lastItemLink,
+                room,
             };
         } else {
             throw new Error('Failed to read RSS channel details.');

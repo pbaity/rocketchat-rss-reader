@@ -28,22 +28,6 @@ export class FeedManager {
         this.room = this.context.getRoom();
     }
 
-    public initializeAutoReader(): void {
-        setInterval(async () => {
-            const feeds: Array<IFeed> = await FeedStore.getAllFeeds(this.persisRead);
-            if (feeds.length) {
-                for (const feed of feeds) {
-                    const messages: Array<IMessage> = await this.read(feed, this.persis, this.context, this.http);
-                    if (messages.length) {
-                        for (const message of messages) {
-                            Messenger.notify(message, this.modify);
-                        }
-                    }
-                }
-            }
-        }, 1000 * 60 * 20);
-    }
-
     public async subscribe(url: string): Promise<void> {
         const message: IMessage = {
             room: this.room,
@@ -52,7 +36,7 @@ export class FeedManager {
         };
 
         try {
-            const feed: IFeed = await FeedReader.getFeedInfo(url, this.http);
+            const feed: IFeed = await FeedReader.getFeedInfo(url, this.http, this.context.getRoom());
             await FeedStore.add(this.persis, message.room, feed);
             message.text = `Subscribed to feed ${feed.title} at ${feed.link}.`;
         } catch (err) {
@@ -116,25 +100,5 @@ export class FeedManager {
         };
 
         Messenger.notify(message, this.modify);
-    }
-
-    private async read(feed: IFeed, persis: IPersistence, context: SlashCommandContext, http: IHttp): Promise<Array<IMessage>> {
-        const messages: Array<IMessage> = [];
-        const newItems: Array<IFeedItem> = await FeedReader.getNewFeedItems(feed, http);
-
-        if (newItems.length) {
-            feed.lastItemLink = newItems[0].link;
-            FeedStore.update(persis, context.getRoom(), feed);
-            for (const item of newItems) {
-                messages.push({
-                    room: context.getRoom(),
-                    sender: context.getSender(),
-                    groupable: false,
-                    text: `${item.title}\n${item.link}`,
-                });
-            }
-        }
-
-        return messages;
     }
 }

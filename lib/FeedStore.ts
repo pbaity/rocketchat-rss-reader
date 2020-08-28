@@ -25,10 +25,10 @@ export class FeedStore {
         return true;
     }
 
-    public static async update(persis: IPersistence, room: IRoom, feed: IFeed): Promise<boolean> {
+    public static async update(persis: IPersistence, feed: IFeed): Promise<boolean> {
         const associations: Array<RocketChatAssociationRecord> = [
             new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, 'feed'),
-            new RocketChatAssociationRecord(RocketChatAssociationModel.ROOM, room.id),
+            new RocketChatAssociationRecord(RocketChatAssociationModel.ROOM, feed.room.id),
             new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, feed.link),
             new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, feed.uuid!),
         ];

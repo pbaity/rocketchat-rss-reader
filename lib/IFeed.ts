@@ -6,5 +6,5 @@ export interface IFeed {
     link: string;
     description: string;
     lastItemLink?: string;
-    room?: IRoom;
+    room: IRoom;
 }
